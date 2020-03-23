@@ -1,21 +1,17 @@
-FROM pangpanglabs/golang:builder AS builder
-WORKDIR /go/src/hublabs/login-api
-COPY ./ /go/src/hublabs/login-api
-# disable cgo 
+FROM golang:1.13 AS builder
+
+RUN go env -w GOPROXY=https://goproxy.cn,direct
+WORKDIR /go/src/github.com/hublabs/login-api
+ADD go.mod go.sum ./
+RUN go mod download
+ADD . /go/src/github.com/hublabs/login-api
 ENV CGO_ENABLED=0
-# build steps
-ENV GOPROXY=https://goproxy.cn
-ENV GO111MODULE=on
-RUN echo ">>> 1: go version" && go version \
-    && echo ">>> 2: go get" && go get -v -d \
-    && echo ">>> 3: go install" && go install
+RUN go build -o login-api
 
-# make application docker image use alpine
 FROM pangpanglabs/alpine-ssl
+WORKDIR /go/src/github.com/hublabs/login-api
+COPY --from=builder /go/src/github.com/hublabs/login-api ./
 
-WORKDIR /go/bin/
-# copy execute file to image
-COPY --from=builder /go/bin/login-api ./
-EXPOSE 8001
+EXPOSE 8002
 
 CMD ["./login-api", "api-server"]
