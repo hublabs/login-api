@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-xorm/xorm"
@@ -13,10 +14,12 @@ import (
 	"github.com/pangpanglabs/goutils/test"
 )
 
-func Test_LoginApiController_GetLoginById(t *testing.T) {
-	req := httptest.NewRequest(echo.GET, "/v1/logins/ping", nil)
+func Test_UserNameApiController_LoginByUserName(t *testing.T) {
+	req := httptest.NewRequest(echo.POST, "/v1/logins/user-name",
+		strings.NewReader(`{"userName":"xiao.ming", "password":"1111"}`))
 
 	c, rec := SetContext(req)
+
 	dbSession := factory.DB(c.Request().Context()).(*xorm.Session)
 	dbSession.Begin()
 	defer func() {
@@ -24,15 +27,15 @@ func Test_LoginApiController_GetLoginById(t *testing.T) {
 		dbSession.Rollback()
 	}()
 
-	test.Ok(t, LoginApiController{}.ping(c))
+	test.Ok(t, UserNameLoginApiController{}.LoginByUserName(c))
 	test.Equals(t, http.StatusOK, rec.Code)
 
 	var v struct {
-		Result  string                 `json:"result"`
+		Result  map[string]interface{} `json:"result"`
 		Success bool                   `json:"success"`
 		Errors  map[string]interface{} `json:"error"`
 	}
 
 	test.Ok(t, json.Unmarshal(rec.Body.Bytes(), &v))
-	test.Equals(t, v.Result, "ping")
+	test.Equals(t, len(v.Result["token"].(string)) > 10, true)
 }
