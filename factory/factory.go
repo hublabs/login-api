@@ -2,12 +2,24 @@ package factory
 
 import (
 	"context"
+	"sync"
 
 	"github.com/go-xorm/xorm"
 	"github.com/pangpanglabs/goutils/echomiddleware"
 )
 
-func DB(ctx context.Context) *xorm.Session {
+var (
+	db   *xorm.Engine
+	once sync.Once
+)
+
+func InitDB(e *xorm.Engine) {
+	once.Do(func() {
+		db = e
+	})
+}
+
+func DB(ctx context.Context) xorm.Interface {
 	v := ctx.Value(echomiddleware.ContextDBName)
 	if v == nil {
 		panic("DB is not exist")
@@ -16,7 +28,7 @@ func DB(ctx context.Context) *xorm.Session {
 		return db
 	}
 	if db, ok := v.(*xorm.Engine); ok {
-		return db.NewSession()
+		return db
 	}
 	panic("DB is not exist")
 }

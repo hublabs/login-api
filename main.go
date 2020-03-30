@@ -5,6 +5,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/hublabs/common/api"
 	configutil "github.com/hublabs/login-api/config"
 	"github.com/hublabs/login-api/controllers"
 
@@ -20,6 +21,7 @@ import (
 
 func main() {
 	configutil.Read()
+	api.SetErrorMessagePrefix(configutil.Service)
 
 	xormEngine, err := xorm.NewEngine(configutil.DataBaseDriver, configutil.LoginApiConnection)
 	if err != nil {
@@ -63,6 +65,7 @@ func initEchoApp(xormEngine *xorm.Engine) *echo.Echo {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	e.Use(middleware.Logger())
 	e.Use(middleware.RequestID())
 
 	e.Use(echomiddleware.ContextDB(configutil.Service, xormEngine, kafka.Config{}))
@@ -77,4 +80,5 @@ func InitControllers(e *echo.Echo) {
 
 	controllers.HomeApiController{}.Init(e)
 	controllers.LoginApiController{}.Init(e)
+	controllers.UserNameLoginApiController{}.Init(e)
 }
