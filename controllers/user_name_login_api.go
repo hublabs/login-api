@@ -26,8 +26,13 @@ func (c UserNameLoginApiController) LoginByUserName(ctx echo.Context) error {
 		return renderFail(ctx, api.ErrorParameter.New(err))
 	}
 
+	mode, err := GetUserNameLoginMode(loginUser.UserName)
+	if err != nil {
+		return renderFail(ctx, api.ErrorParameter.New(err))
+	}
+
 	/*=======================> Main Function LoginByUserName <=======================*/
-	tokens, err := models.Login{}.LoginByUserName(ctx.Request().Context(), loginUser.UserName, loginUser.Password)
+	tokens, err := models.Login{}.LoginByUserName(ctx.Request().Context(), mode, loginUser.UserName, loginUser.Password)
 	if err != nil {
 		return renderFail(ctx, api.ErrorDB.New(err))
 	}

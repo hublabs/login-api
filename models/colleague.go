@@ -2,10 +2,38 @@ package models
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+
+	"github.com/hublabs/common/api"
+	configutil "github.com/hublabs/login-api/config"
+
+	"github.com/pangpanglabs/goutils/behaviorlog"
+	"github.com/pangpanglabs/goutils/httpreq"
 )
 
 type Colleague struct{}
 
-func (Colleague) AuthenticationByUserName(ctx context.Context, identiKey string, password string) (int64, bool, error) {
-	return int64(1), true, nil
+func (Colleague) AuthenticationByUserName(ctx context.Context, mode string, identiKey string, password string) (map[string]interface{}, error) {
+	url := fmt.Sprintf(configutil.ColleagueApi + "v1/colleague/authentication")
+	var v struct {
+		Result  map[string]interface{} `json:"result"`
+		Success bool                   `json:"success"`
+		Errors  map[string]interface{} `json:"error"`
+	}
+
+	body := map[string]string{
+		"mode":      mode,
+		"identiKey": identiKey,
+		"password":  password,
+	}
+
+	if statusCode, err := httpreq.New(http.MethodPost, url, body).WithBehaviorLogContext(behaviorlog.FromCtx(ctx)).
+		Call(&v); err != nil {
+		return nil, err
+	} else if statusCode < 200 || statusCode >= 300 {
+		return nil, api.ErrorRemoteService.New(err)
+	}
+
+	return v.Result, nil
 }

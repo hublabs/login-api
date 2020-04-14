@@ -16,7 +16,7 @@ import (
 
 func Test_UserNameApiController_LoginByUserName(t *testing.T) {
 	req := httptest.NewRequest(echo.POST, "/v1/logins/user-name",
-		strings.NewReader(`{"userName":"xiao.ming", "password":"1111"}`))
+		strings.NewReader(`{"userName":"xiao_ming@email.com", "password":"1111"}`))
 
 	c, rec := SetContext(req)
 
