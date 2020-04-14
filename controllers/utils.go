@@ -3,11 +3,17 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"regexp"
 
 	"github.com/hublabs/common/api"
 	"github.com/pangpanglabs/goutils/behaviorlog"
 
 	"github.com/labstack/echo"
+)
+
+const (
+	EmailMode  string = "email"
+	MobileMode string = "mobile"
 )
 
 func renderFail(c echo.Context, err error) error {
@@ -44,4 +50,31 @@ func renderSucc(c echo.Context, status int, result interface{}) error {
 		Success: true,
 		Result:  result,
 	})
+}
+
+//email verify
+func VerifyEmailFormat(email string) bool {
+	//pattern := `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*` //匹配电子邮箱
+	pattern := `^[0-9a-z][_.0-9a-z-]{0,31}@([0-9a-z][0-9a-z-]{0,30}[0-9a-z]\.){1,4}[a-z]{2,4}$`
+
+	reg := regexp.MustCompile(pattern)
+	return reg.MatchString(email)
+}
+
+//mobile verify
+func VerifyMobileFormat(mobileNum string) bool {
+	regular := "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$"
+
+	reg := regexp.MustCompile(regular)
+	return reg.MatchString(mobileNum)
+}
+
+func GetUserNameLoginMode(userName string) (string, error) {
+	if VerifyEmailFormat(userName) {
+		return EmailMode, nil
+	}
+	if VerifyMobileFormat(userName) {
+		return MobileMode, nil
+	}
+	return "", errors.New("invalid account.")
 }

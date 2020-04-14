@@ -10,6 +10,7 @@ var (
 	Service            string
 	DataBaseDriver     string
 	LoginApiConnection string
+	ColleagueApi       string
 )
 
 func Read() {
@@ -33,6 +34,13 @@ func Read() {
 	} else {
 		LoginApiConnection = loginApiConnection
 	}
+
+	if colleagueApi := os.Getenv("COLLEAGUE_API"); colleagueApi == "" {
+		ColleagueApi = "http://localhost:8001/"
+	} else {
+		ColleagueApi = colleagueApi
+	}
+
 	Service = "login-api"
 }
 
@@ -42,4 +50,5 @@ func ReadForTest() {
 	Service = "login-api"
 	DataBaseDriver = "sqlite3"
 	LoginApiConnection = ":memory:"
+	ColleagueApi = "http://localhost:8001/"
 }

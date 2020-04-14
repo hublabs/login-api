@@ -3,30 +3,40 @@ package models
 import (
 	"context"
 	"errors"
-	"net/http"
 
 	"github.com/hublabs/login-api/jwtauth"
-	"github.com/labstack/echo"
 )
 
 type Login struct{}
 
-func (Login) LoginByUserName(ctx context.Context, userName string, password string) (map[string]interface{}, error) {
-	colleagueId, isLoginSuccess, err := Colleague{}.AuthenticationByUserName(ctx, userName, password)
+func (Login) LoginByUserName(ctx context.Context, mode string, userName string, password string) (map[string]interface{}, error) {
+	tokenDetail, err := Colleague{}.AuthenticationByUserName(ctx, mode, userName, password)
 	if err != nil {
 		return nil, err
 	}
 
-	if isLoginSuccess == false || colleagueId == 0 {
-		return nil, &echo.HTTPError{Code: http.StatusUnauthorized, Message: errors.New("login failed.")}
+	if !IsValidTokenDetail(tokenDetail) {
+		return nil, errors.New("login failed.")
 	}
 
-	tokenInfo := map[string]interface{}{"colleagueId": colleagueId}
-
-	token, err := jwtauth.NewToken(tokenInfo, "colleague")
+	token, err := jwtauth.NewToken(tokenDetail, "colleague")
 	if err != nil {
 		return nil, err
 	}
 
 	return map[string]interface{}{"token": token}, nil
+}
+
+func IsValidTokenDetail(tokenDetail map[string]interface{}) bool {
+	if tokenDetail == nil {
+		return false
+	}
+
+	if colleagueId, ok := tokenDetail["colleagueId"]; ok {
+		if id, ok := colleagueId.(float64); ok && id > 0 {
+			return true
+		}
+	}
+
+	return false
 }
