@@ -1,0 +1,13 @@
+database:
+  driver: sqlite3
+  connection: login.db
+  # connection: root:1234@tcp(127.0.0.1:3306)/product?charset=utf8&parseTime=True&loc=Local
+behaviorLog:
+  kafka:
+    brokers:
+      - 127.0.0.1:9092
+    topic: behaviorlog
+debug: true
+serviceName: product-api
+httpPort:     8002
+colleagueApi: http://localhost:80/colleague-api/

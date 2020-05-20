@@ -8,31 +8,31 @@ import (
 	"github.com/labstack/echo"
 )
 
-type UserNameLoginApiController struct {
+type UsernameLoginApiController struct {
 }
 
-func (c UserNameLoginApiController) Init(g *echo.Echo) {
+func (c UsernameLoginApiController) Init(g *echo.Echo) {
 	//账号密码登录
-	g.POST("/v1/logins/user-name", c.LoginByUserName)
+	g.POST("/v1/logins/user-name", c.LoginByUsername)
 }
 
 //用账号密码登陆
-func (c UserNameLoginApiController) LoginByUserName(ctx echo.Context) error {
+func (c UsernameLoginApiController) LoginByUsername(ctx echo.Context) error {
 	var loginUser struct {
-		UserName string `json:"userName"`
+		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 	if err := ctx.Bind(&loginUser); err != nil {
 		return renderFail(ctx, api.ErrorParameter.New(err))
 	}
 
-	mode, err := GetUserNameLoginMode(loginUser.UserName)
+	mode, err := GetUsernameLoginMode(loginUser.Username)
 	if err != nil {
 		return renderFail(ctx, api.ErrorParameter.New(err))
 	}
 
-	/*=======================> Main Function LoginByUserName <=======================*/
-	tokens, err := models.Login{}.LoginByUserName(ctx.Request().Context(), mode, loginUser.UserName, loginUser.Password)
+	/*=======================> Main Function LoginByUsername <=======================*/
+	tokens, err := models.Login{}.LoginByUsername(ctx.Request().Context(), mode, loginUser.Username, loginUser.Password)
 	if err != nil {
 		return renderFail(ctx, api.ErrorDB.New(err))
 	}
