@@ -1,13 +1,15 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"sort"
 	"time"
 
 	"github.com/hublabs/common/api"
-	configutil "github.com/hublabs/login-api/config"
+	"github.com/hublabs/login-api/config"
 	"github.com/hublabs/login-api/controllers"
+	"github.com/hublabs/login-api/models"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
@@ -19,11 +21,20 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
-	configutil.Read()
-	api.SetErrorMessagePrefix(configutil.Service)
+var (
+	appEnv = flag.String("app-env", os.Getenv("APP_ENV"), "app env")
+)
 
-	xormEngine, err := xorm.NewEngine(configutil.DataBaseDriver, configutil.LoginApiConnection)
+func main() {
+	c := config.Init(*appEnv)
+	api.SetErrorMessagePrefix(c.ServiceName)
+
+	models.SetModelConfig(&models.ModelConfig{
+		AppEnv:       *appEnv,
+		ColleagueApi: c.ColleagueApi,
+	})
+
+	xormEngine, err := xorm.NewEngine(c.Database.Driver, c.Database.Connection)
 	if err != nil {
 		panic(err)
 	}
@@ -36,8 +47,8 @@ func main() {
 		{
 			Name:  "api-server",
 			Usage: "run api server",
-			Action: func(c *cli.Context) error {
-				if err := initEchoApp(xormEngine).Start(":" + configutil.Httpport); err != nil {
+			Action: func(cliContext *cli.Context) error {
+				if err := initEchoApp(xormEngine, c.ServiceName).Start(":" + c.HttpPort); err != nil {
 					return err
 				}
 				return nil
@@ -52,7 +63,7 @@ func main() {
 
 }
 
-func initEchoApp(xormEngine *xorm.Engine) *echo.Echo {
+func initEchoApp(xormEngine *xorm.Engine, serviceName string) *echo.Echo {
 	xormEngine.SetMaxOpenConns(50)
 	xormEngine.SetMaxIdleConns(50)
 	xormEngine.SetConnMaxLifetime(60 * time.Second)
@@ -68,7 +79,7 @@ func initEchoApp(xormEngine *xorm.Engine) *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.RequestID())
 
-	e.Use(echomiddleware.ContextDB(configutil.Service, xormEngine, kafka.Config{}))
+	e.Use(echomiddleware.ContextDB(serviceName, xormEngine, kafka.Config{}))
 
 	// 초기에 token 인증을 처리하지 않고 후에는 처리 되여야 함.
 	// e.Use(auth.UserClaimMiddelware())
@@ -80,5 +91,5 @@ func InitControllers(e *echo.Echo) {
 
 	controllers.HomeApiController{}.Init(e)
 	controllers.LoginApiController{}.Init(e)
-	controllers.UserNameLoginApiController{}.Init(e)
+	controllers.UsernameLoginApiController{}.Init(e)
 }

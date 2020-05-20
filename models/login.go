@@ -9,8 +9,8 @@ import (
 
 type Login struct{}
 
-func (Login) LoginByUserName(ctx context.Context, mode string, userName string, password string) (map[string]interface{}, error) {
-	tokenDetail, err := Colleague{}.AuthenticationByUserName(ctx, mode, userName, password)
+func (Login) LoginByUsername(ctx context.Context, mode string, username string, password string) (map[string]interface{}, error) {
+	tokenDetail, err := Colleague{}.AuthenticationByUsername(ctx, mode, username, password)
 	if err != nil {
 		return nil, err
 	}

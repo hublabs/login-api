@@ -2,13 +2,11 @@ package controllers
 
 import (
 	"context"
-	"flag"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"runtime"
 
-	configutil "github.com/hublabs/login-api/config"
+	"github.com/hublabs/login-api/models"
 
 	"github.com/go-xorm/xorm"
 	"github.com/labstack/echo"
@@ -18,7 +16,7 @@ import (
 )
 
 var (
-	appEnv           = flag.String("app-env", os.Getenv("APP_ENV"), "app env")
+	appEnv           = ""
 	ctx              context.Context
 	echoApp          *echo.Echo
 	handleWithFilter func(handlerFunc echo.HandlerFunc, c echo.Context) error
@@ -27,16 +25,20 @@ var (
 
 func init() {
 	runtime.GOMAXPROCS(1)
-	configutil.ReadForTest()
 	var err error
 	xormEngine, err = xorm.NewEngine("sqlite3", ":memory:")
 	if err != nil {
 		panic(err)
 	}
 
+	models.SetModelConfig(&models.ModelConfig{
+		AppEnv:       "test",
+		ColleagueApi: "http://localhost:80/colleague-api/",
+	})
+
 	echoApp = echo.New()
-	handleWithFilter = func(handlerFunc echo.HandlerFunc, c echo.Context) error {
-		return echomiddleware.ContextDB(configutil.Service, xormEngine, kafka.Config{})(handlerFunc)(c)
+	handleWithFilter = func(handlerFunc echo.HandlerFunc, echoContext echo.Context) error {
+		return echomiddleware.ContextDB("login-api", xormEngine, kafka.Config{})(handlerFunc)(echoContext)
 	}
 	ctx = context.WithValue(context.Background(), echomiddleware.ContextDBName, xormEngine.NewSession())
 }

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/hublabs/common/api"
-	configutil "github.com/hublabs/login-api/config"
 
 	"github.com/pangpanglabs/goutils/behaviorlog"
 	"github.com/pangpanglabs/goutils/httpreq"
@@ -14,8 +13,9 @@ import (
 
 type Colleague struct{}
 
-func (Colleague) AuthenticationByUserName(ctx context.Context, mode string, identiKey string, password string) (map[string]interface{}, error) {
-	url := fmt.Sprintf(configutil.ColleagueApi + "v1/colleague/authentication")
+func (Colleague) AuthenticationByUsername(ctx context.Context, mode string, identiKey string, password string) (map[string]interface{}, error) {
+	url := fmt.Sprintf(modelConfig.ColleagueApi + "v1/login/token-detail")
+	fmt.Println(url)
 	var v struct {
 		Result  map[string]interface{} `json:"result"`
 		Success bool                   `json:"success"`

@@ -69,11 +69,11 @@ func VerifyMobileFormat(mobileNum string) bool {
 	return reg.MatchString(mobileNum)
 }
 
-func GetUserNameLoginMode(userName string) (string, error) {
-	if VerifyEmailFormat(userName) {
+func GetUsernameLoginMode(username string) (string, error) {
+	if VerifyEmailFormat(username) {
 		return EmailMode, nil
 	}
-	if VerifyMobileFormat(userName) {
+	if VerifyMobileFormat(username) {
 		return MobileMode, nil
 	}
 	return "", errors.New("invalid account.")

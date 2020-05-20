@@ -14,9 +14,9 @@ import (
 	"github.com/pangpanglabs/goutils/test"
 )
 
-func Test_UserNameApiController_LoginByUserName(t *testing.T) {
+func Test_UsernameApiController_LoginByUsername(t *testing.T) {
 	req := httptest.NewRequest(echo.POST, "/v1/logins/user-name",
-		strings.NewReader(`{"userName":"xiao_ming@email.com", "password":"1111"}`))
+		strings.NewReader(`{"mode":"email", "username":"system@email.com", "password":"1111"}`))
 
 	c, rec := SetContext(req)
 
@@ -27,7 +27,7 @@ func Test_UserNameApiController_LoginByUserName(t *testing.T) {
 		dbSession.Rollback()
 	}()
 
-	test.Ok(t, UserNameLoginApiController{}.LoginByUserName(c))
+	test.Ok(t, UsernameLoginApiController{}.LoginByUsername(c))
 	test.Equals(t, http.StatusOK, rec.Code)
 
 	var v struct {

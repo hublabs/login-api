@@ -2,53 +2,47 @@ package config
 
 import (
 	"os"
+
+	configutil "github.com/pangpanglabs/goutils/config"
+	"github.com/pangpanglabs/goutils/echomiddleware"
+	"github.com/pangpanglabs/goutils/jwtutil"
+	"github.com/sirupsen/logrus"
 )
 
-var (
-	AppEnv             string
-	Httpport           string
-	Service            string
-	DataBaseDriver     string
-	LoginApiConnection string
-	ColleagueApi       string
-)
+var config C
 
-func Read() {
-	if appEnv := os.Getenv("APP_ENV"); appEnv == "" {
-		AppEnv = "test"
-	} else {
-		AppEnv = appEnv
-	}
-	if httpport := os.Getenv("HTTP_PORT"); httpport == "" {
-		Httpport = "8002"
-	} else {
-		Httpport = httpport
-	}
-	if dataBaseDriver := os.Getenv("DATABASE_DRIVER"); dataBaseDriver == "" {
-		DataBaseDriver = "sqlite3"
-	} else {
-		DataBaseDriver = dataBaseDriver
-	}
-	if loginApiConnection := os.Getenv("LOGIN_API_CONNECTION"); loginApiConnection == "" {
-		LoginApiConnection = ":memory:"
-	} else {
-		LoginApiConnection = loginApiConnection
+func Init(appEnv string, options ...func(*C)) C {
+	if err := configutil.Read(appEnv, &config); err != nil {
+		logrus.WithError(err).Warn("Fail to load config file")
 	}
 
-	if colleagueApi := os.Getenv("COLLEAGUE_API"); colleagueApi == "" {
-		ColleagueApi = "http://localhost:8001/"
-	} else {
-		ColleagueApi = colleagueApi
+	if s := os.Getenv("JWT_SECRET"); s != "" {
+		config.JwtSecret = s
+		jwtutil.SetJwtSecret(s)
 	}
 
-	Service = "login-api"
+	for _, option := range options {
+		option(&config)
+	}
+
+	return config
 }
 
-func ReadForTest() {
-	AppEnv = "test"
-	Httpport = "8002"
-	Service = "login-api"
-	DataBaseDriver = "sqlite3"
-	LoginApiConnection = ":memory:"
-	ColleagueApi = "http://localhost:8001/"
+func Config() C {
+	return config
+}
+
+type C struct {
+	Database struct {
+		Driver     string
+		Connection string
+	}
+	BehaviorLog struct {
+		Kafka echomiddleware.KafkaConfig
+	}
+	AppEnv       string
+	JwtSecret    string
+	HttpPort     string
+	ServiceName  string
+	ColleagueApi string
 }
