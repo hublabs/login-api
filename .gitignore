@@ -8,3 +8,4 @@ debug
 *.prof
 login-api
 login-api.exe
+config.dev.yml

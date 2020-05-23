@@ -6,20 +6,21 @@ import (
 
 	"github.com/go-xorm/xorm"
 	"github.com/pangpanglabs/goutils/echomiddleware"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	db   *xorm.Engine
-	once sync.Once
+	xormEngine *xorm.Engine
+	once       sync.Once
 )
 
 func InitDB(e *xorm.Engine) {
 	once.Do(func() {
-		db = e
+		xormEngine = e
 	})
 }
 
-func DB(ctx context.Context) xorm.Interface {
+func DB(ctx context.Context) *xorm.Session {
 	v := ctx.Value(echomiddleware.ContextDBName)
 	if v == nil {
 		panic("DB is not exist")
@@ -28,7 +29,22 @@ func DB(ctx context.Context) xorm.Interface {
 		return db
 	}
 	if db, ok := v.(*xorm.Engine); ok {
-		return db
+		return db.NewSession()
 	}
 	panic("DB is not exist")
+}
+
+func XormEngine() *xorm.Engine {
+	return xormEngine
+}
+
+func Logger(ctx context.Context) *logrus.Entry {
+	v := ctx.Value(echomiddleware.ContextLoggerName)
+	if v == nil {
+		return logrus.WithFields(logrus.Fields{})
+	}
+	if logger, ok := v.(*logrus.Entry); ok {
+		return logger
+	}
+	return logrus.WithFields(logrus.Fields{})
 }

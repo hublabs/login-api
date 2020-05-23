@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-xorm/xorm"
 	"github.com/hublabs/login-api/factory"
 
 	"github.com/labstack/echo"
@@ -20,7 +19,7 @@ func Test_UsernameApiController_LoginByUsername(t *testing.T) {
 
 	c, rec := SetContext(req)
 
-	dbSession := factory.DB(c.Request().Context()).(*xorm.Session)
+	dbSession := factory.DB(c.Request().Context())
 	dbSession.Begin()
 	defer func() {
 		dbSession.Close()

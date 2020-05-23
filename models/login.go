@@ -18,7 +18,7 @@ func (Login) LoginByUsername(ctx context.Context, mode string, username string, 
 	if !IsValidTokenDetail(tokenDetail) {
 		return nil, errors.New("login failed.")
 	}
-
+	tokenDetail["tenantCode"] = "hublabs"
 	token, err := jwtauth.NewToken(tokenDetail, "colleague")
 	if err != nil {
 		return nil, err
