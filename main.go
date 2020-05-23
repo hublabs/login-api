@@ -9,6 +9,7 @@ import (
 	"github.com/hublabs/common/api"
 	"github.com/hublabs/login-api/config"
 	"github.com/hublabs/login-api/controllers"
+	"github.com/hublabs/login-api/factory"
 	"github.com/hublabs/login-api/models"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -34,11 +35,8 @@ func main() {
 		ColleagueApi: c.ColleagueApi,
 	})
 
-	xormEngine, err := xorm.NewEngine(c.Database.Driver, c.Database.Connection)
-	if err != nil {
-		panic(err)
-	}
-
+	xormEngine := initXormEngine(c.Database.Driver, c.Database.Connection)
+	factory.InitDB(xormEngine)
 	defer xormEngine.Close()
 
 	app := cli.NewApp()
@@ -88,8 +86,20 @@ func initEchoApp(xormEngine *xorm.Engine, serviceName string) *echo.Echo {
 }
 
 func InitControllers(e *echo.Echo) {
-
 	controllers.HomeApiController{}.Init(e)
 	controllers.LoginApiController{}.Init(e)
 	controllers.UsernameLoginApiController{}.Init(e)
+}
+
+func initXormEngine(driver, connection string) *xorm.Engine {
+	xormEngine, err := xorm.NewEngine(driver, connection)
+	if err != nil {
+		panic(err)
+	}
+	xormEngine.SetMaxIdleConns(5)
+	xormEngine.SetMaxOpenConns(20)
+	xormEngine.SetConnMaxLifetime(time.Minute * 10)
+	//xormEngine.ShowSQL()
+
+	return xormEngine
 }

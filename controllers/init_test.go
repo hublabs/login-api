@@ -33,7 +33,7 @@ func init() {
 
 	models.SetModelConfig(&models.ModelConfig{
 		AppEnv:       "test",
-		ColleagueApi: "http://localhost:80/colleague-api/",
+		ColleagueApi: "http://localhost:80/colleague-api",
 	})
 
 	echoApp = echo.New()

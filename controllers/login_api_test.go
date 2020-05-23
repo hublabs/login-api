@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-xorm/xorm"
 	"github.com/hublabs/login-api/factory"
 
 	"github.com/labstack/echo"
@@ -17,7 +16,7 @@ func Test_LoginApiController_GetLoginById(t *testing.T) {
 	req := httptest.NewRequest(echo.GET, "/v1/logins/ping", nil)
 
 	c, rec := SetContext(req)
-	dbSession := factory.DB(c.Request().Context()).(*xorm.Session)
+	dbSession := factory.DB(c.Request().Context())
 	dbSession.Begin()
 	defer func() {
 		dbSession.Close()

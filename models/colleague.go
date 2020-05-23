@@ -14,8 +14,7 @@ import (
 type Colleague struct{}
 
 func (Colleague) AuthenticationByUsername(ctx context.Context, mode string, identiKey string, password string) (map[string]interface{}, error) {
-	url := fmt.Sprintf(modelConfig.ColleagueApi + "v1/login/token-detail")
-	fmt.Println(url)
+	url := fmt.Sprintf(modelConfig.ColleagueApi + "/v1/login/token-detail")
 	var v struct {
 		Result  map[string]interface{} `json:"result"`
 		Success bool                   `json:"success"`
