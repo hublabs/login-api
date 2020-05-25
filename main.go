@@ -79,7 +79,7 @@ func initEchoApp(xormEngine *xorm.Engine, serviceName string) *echo.Echo {
 
 	e.Use(echomiddleware.ContextDB(serviceName, xormEngine, kafka.Config{}))
 
-	// 초기에 token 인증을 처리하지 않고 후에는 처리 되여야 함.
+	//TODO 초기에 token 인증을 처리하지 않고 후에는 처리 되여야 함.
 	// e.Use(auth.UserClaimMiddelware())
 
 	return e
