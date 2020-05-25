@@ -27,7 +27,13 @@ func (Colleague) AuthenticationByUsername(ctx context.Context, mode string, iden
 		"password":  password,
 	}
 
-	if statusCode, err := httpreq.New(http.MethodPost, url, body).WithBehaviorLogContext(behaviorlog.FromCtx(ctx)).
+	//TODO 환경셋팅이 되면 그떄 없앰.
+	tempToken, err := GetTempTokenForLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode, err := httpreq.New(http.MethodPost, url, body).WithBehaviorLogContext(behaviorlog.FromCtx(ctx)).WithToken(tempToken).
 		Call(&v); err != nil {
 		return nil, err
 	} else if statusCode < 200 || statusCode >= 300 {
